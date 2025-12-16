@@ -6,6 +6,45 @@ Type : B_DFS
 Note : 너무 긴데 사실 간단한 FS 문제의 반복이고 도형비교에 대한 알고리즘 도 중요하네
 """
 
+def affine(coor:list):
+    x_min = 1e10
+    y_min = 1e10
+    for x, y in coor:
+        if x < x_min:
+            x_min = x
+        if y < y_min:
+            y_min = y
+    return sorted([(x-x_min, y-y_min) for x, y in coor])
+
+def dfs(board:list):
+    """
+    1 찾는거임
+    """
+    row, col = len(board), len(board[0])
+    visited = [[False]*col for i in range(row)]
+    start = (0,0)
+    puzzles = []
+    directions = ((1,0), (-1,0), (0,1), (0,-1))
+    for x in range(row):
+        for y in range(col):
+            # 퍼즐이라면
+            if board[x][y] == 1 and not visited[x][y]:
+                stack = [(x, y)]
+                visited[x][y] = True
+                puzzle = []
+                while stack:
+                    x, y = stack.pop()
+                    puzzle.append((x, y))
+                    for dx, dy in directions:
+                        nx, ny = dx+x, dy+y
+                        if (0 <= nx < row and 0 <= ny < col) and board[nx][ny] == 1 and not visited[nx][ny]:
+                            visited[nx][ny] = True
+                            stack.append((nx, ny))
+                # 퍼즐 맞으니까
+                puzzle = affine(puzzle)
+                puzzles.append(puzzle)
+    return puzzles
+
 def solution(game_board, table):
     answer = -1
     """
@@ -23,8 +62,15 @@ def solution(game_board, table):
     
     그 다음 도형을 넣을 수 있음 넣고...
     """
+    # 1. table 에서 퍼즐 조각 찾기
+    puzzles = dfs(table)
+    # 1-1. 퍼즐 조각 좌상단으로 평행이동
     
+    # 2. game_board 에서 퍼즐 구멍 찾기
+    holes = dfs(game_board)
+    # 2-1. 퍼즐 구멍 좌상단으로 평행이동
     
+    # 3. 각 퍼즐 조각을 순회하면서 구멍이랑 동일한지 비교
     
     return answer
 
