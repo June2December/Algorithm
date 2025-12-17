@@ -16,7 +16,7 @@ def affine(coor:list):
             y_min = y
     return sorted([(x-x_min, y-y_min) for x, y in coor])
 
-def dfs(board:list):
+def dfs(board:list, target):
     """
     1 찾는거임
     """
@@ -28,22 +28,51 @@ def dfs(board:list):
     for x in range(row):
         for y in range(col):
             # 퍼즐이라면
-            if board[x][y] == 1 and not visited[x][y]:
+            if board[x][y] == target and not visited[x][y]:
                 stack = [(x, y)]
                 visited[x][y] = True
                 puzzle = []
                 while stack:
-                    x, y = stack.pop()
-                    puzzle.append((x, y))
+                    cx, cy = stack.pop()
+                    puzzle.append((cx, cy))
                     for dx, dy in directions:
-                        nx, ny = dx+x, dy+y
-                        if (0 <= nx < row and 0 <= ny < col) and board[nx][ny] == 1 and not visited[nx][ny]:
+                        nx, ny = dx+cx, dy+cy
+                        if (0 <= nx < row and 0 <= ny < col) and board[nx][ny] == target and not visited[nx][ny]:
                             visited[nx][ny] = True
                             stack.append((nx, ny))
                 # 퍼즐 맞으니까
                 puzzle = affine(puzzle)
                 puzzles.append(puzzle)
     return puzzles
+
+def compare_puzzle(puzzles, holes):
+    def affine_rot(shape):
+        rotations = []
+        cur = shape
+        for _ in range(4):
+            rotations.append(cur)
+            # 90도 회전: (x, y) --> (-y, x)
+            # rot 행렬 : [0, -1] [1, 0] 되니까
+            cur = [(-y, x) for x, y in cur]
+            cur = affine(cur)
+        return rotations
+    
+    count = 0
+    # 확인한 퍼즐은 다시 안해도 되지
+    visited = [False] * len(puzzles)
+    # sorted 했으니까 굳이 안해도 될듯???
+    for hole in holes:
+        for idx, puzzle in enumerate(puzzles):
+            if visited[idx]:
+                continue
+            if len(puzzle) != len(hole):
+                continue
+            rot_puzzle = affine_rot(puzzle)
+            if hole in rot_puzzle:
+                visited[idx] = True
+                count += len(hole)
+                break
+    return count
 
 def solution(game_board, table):
     answer = -1
@@ -63,22 +92,36 @@ def solution(game_board, table):
     그 다음 도형을 넣을 수 있음 넣고...
     """
     # 1. table 에서 퍼즐 조각 찾기
-    puzzles = dfs(table)
+    puzzles = dfs(table, 1)
     # 1-1. 퍼즐 조각 좌상단으로 평행이동
     
     # 2. game_board 에서 퍼즐 구멍 찾기
-    holes = dfs(game_board)
+    holes = dfs(game_board, 0)
     # 2-1. 퍼즐 구멍 좌상단으로 평행이동
     
     # 3. 각 퍼즐 조각을 순회하면서 구멍이랑 동일한지 비교
+    return compare_puzzle(puzzles, holes)
     
-    return answer
-
 
 if __name__ == "__main__":
     """
+    game_board
+    [[1,1,0,0,1,0],[0,0,1,0,1,0],[0,1,1,0,0,1],[1,1,0,1,1,1],[1,0,0,0,1,0],[0,1,1,1,0,0]]
+    table
+    [[1,0,0,1,1,0],[1,0,1,0,1,0],[0,1,1,0,1,1],[0,0,1,0,0,0],[1,1,0,1,1,0],[0,1,0,0,0,0]]
+    result
+    14
+    
+    game_board
+    [[0,0,0],[1,1,0],[1,1,1]]
+    table
+    [[1,1,1],[1,0,0],[0,0,0]]
+    result
+    0
     """
     
-    # print(solution())
-    # print(solution())
+    print(solution([[1,1,0,0,1,0],[0,0,1,0,1,0],[0,1,1,0,0,1],[1,1,0,1,1,1],[1,0,0,0,1,0],[0,1,1,1,0,0]],\
+        [[1,0,0,1,1,0],[1,0,1,0,1,0],[0,1,1,0,1,1],[0,0,1,0,0,0],[1,1,0,1,1,0],[0,1,0,0,0,0]]))
+    print(solution([[0,0,0],[1,1,0],[1,1,1]],\
+        [[1,1,1],[1,0,0],[0,0,0]]))
     
