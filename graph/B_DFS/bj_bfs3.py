@@ -30,7 +30,8 @@ def solution(N, R, edges):
                 q.append((nxt, _layer+1))
                 memory[nxt] = _layer + 1
                 visited[nxt] = True
-    print(memory)
+    for x in memory[1:]:
+        print(x)
     
 
 if __name__ == "__main__":
