@@ -70,6 +70,9 @@ def solution(operations):
                 count[temp] -= 1
                 size -= 1
     
+    # 마지막에 뺀거 count=0 일 수도 있지
+    confirm_max()
+    confirm_min()
     return [0, 0] if size == 0 else [-max_h[0], min_h[0]]
 
 
